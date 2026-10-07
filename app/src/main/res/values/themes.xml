@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Pomodoro" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#1E1E1E</item>
+        <item name="android:colorBackground">#1E1E1E</item>
+        <item name="android:statusBarColor">#1E1E1E</item>
+        <item name="android:navigationBarColor">#1E1E1E</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- Android 12+ 启动画面（SplashScreen）。
+             不显式指定时，系统会依据应用图标推断启动画面配色，图标背景层一旦调整，
+             冷启动画面会跟着变色、与应用的深色主题割裂。这里把底色固定成应用深色底，
+             图标底圈跟随应用图标的米黄，保持启动画面与桌面图标观感一致。 -->
+        <item name="android:windowSplashScreenBackground">#1E1E1E</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#F0E5CF</item>
+    </style>
+</resources>

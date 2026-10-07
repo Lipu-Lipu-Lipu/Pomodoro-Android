@@ -1,0 +1,29 @@
+# Gradle / AGP 构建产物
+build/
+.gradle/
+.kotlin/
+local.properties
+
+# 签名私钥与凭据 —— 绝对不要提交
+keystore.properties
+*.keystore
+*.jks
+
+# 本机 IDE 配置
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# 截图：验证过程产物，不入库
+#
+# 注意：这里必须写 `/*.png` 而不是 `*.png`。
+# `*.png` 会匹配任意层级的 PNG，把 res/mipmap-*/ 下的启动图标一并排除，
+# 别人 clone 下来就没有图标了（实测：mipmap-xxxhdpi/ic_launcher.png 被判为忽略）。
+# 加前导斜杠后只匹配仓库根目录，截图照旧不入库，图标不受影响。
+/*.png
+
+# 本机 AI 辅助工具的工作目录（截图 / 试听音频 / 会话日志），不提交
+.workbuddy-ai/

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 启动图标背景：象牙米黄。
+         桌面版 tomato.ico 是为浅色底绘制的（带柔和阴影与白色高光），浅暖底能保住这层立体感，
+         深色底会把阴影糊成一团；纯白则偏冷、和番茄的暖红有点对冲。
+         改这里必须同步改生成脚本 .workbuddy-ai/live/gen_icon.py 里的 BACKGROUND 常量。 -->
+    <color name="ic_launcher_background">#F0E5CF</color>
+</resources>

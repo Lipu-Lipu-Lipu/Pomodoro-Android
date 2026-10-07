@@ -1,0 +1,16 @@
+# 统一换行符。
+#
+# 不加这个文件时，文件进仓库后的换行符取决于**每个克隆者本机**的 core.autocrlf：
+# Git for Windows 默认把它设为 true，于是 Windows 用户 clone 下来会得到 CRLF 的 gradlew，
+# 在 Git Bash 里执行直接报 `bad interpreter: /bin/sh^M`。
+# 这里显式钉死规则，与个人 git 配置无关。
+
+* text=auto eol=lf
+
+# Windows 批处理必须用 CRLF
+*.bat text eol=crlf
+
+# 二进制文件不做换行符转换
+*.jar binary
+*.png binary
+*.keystore binary

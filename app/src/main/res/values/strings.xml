@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  只保留真正被引用的字符串。
+
+  界面文案（阶段名、按钮、设置项标签、单位）由 Kotlin 直接写死，与桌面版一致，
+  因此没有对应的字符串资源；通知与提醒卡片走资源，便于系统按其样式渲染。
+  改动 UI 文案时记得同步 MainScreen.kt / SettingsPanel.kt / AlertCard.kt。
+-->
+<resources>
+    <string name="app_name">Timer</string>
+
+    <!-- 提醒卡片（AlertCard） -->
+    <string name="alert_title_warn">最后 1 分钟</string>
+    <string name="alert_title_work_end">工作时间到！</string>
+    <string name="alert_title_rest_end">休息时间到！</string>
+    <string name="alert_subtitle_warn">%1$s阶段还剩 1 分钟</string>
+    <string name="alert_subtitle_work_end">已进入超时计时，需要休息请点击“结束，进入休息”</string>
+    <string name="alert_subtitle_rest_end">已进入超时计时，需要工作请点击“结束，进入工作”</string>
+    <string name="btn_got_it">知道了</string>
+
+    <!-- 通知气泡（Heads-up） -->
+    <string name="balloon_title_warn">还剩 1 分钟</string>
+    <string name="balloon_body_warn">%1$s阶段还剩 1 分钟</string>
+    <string name="balloon_title_end">时间到</string>
+    <string name="balloon_body_work_end">工作时间到！需要休息请点击“结束，进入休息”</string>
+    <string name="balloon_body_rest_end">休息时间到！需要工作请点击“结束，进入工作”</string>
+
+    <!-- 通知渠道 -->
+    <string name="channel_timer_name">计时提醒</string>
+    <string name="channel_timer_desc">阶段结束与剩余 1 分钟提醒</string>
+    <string name="channel_service_name">后台计时</string>
+    <string name="channel_service_desc">常驻通知，显示当前阶段与剩余时间</string>
+
+    <!-- 常驻通知 -->
+    <string name="tray_hint">已转入后台运行，计时继续</string>
+    <string name="action_open">打开</string>
+    <string name="action_skip">结束当前阶段</string>
+    <string name="action_exit">退出</string>
+
+    <!-- 通知权限提示 -->
+    <string name="notif_perm_body">开启通知后，阶段结束与剩余 1 分钟的提醒才能显示在屏幕上。</string>
+</resources>

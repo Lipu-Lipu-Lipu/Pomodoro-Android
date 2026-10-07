@@ -1,0 +1,25 @@
+PASS Start enters Work
+PASS Initial snapshot is 120s remaining
+PASS Warn fires once at T-60s
+PASS Warn does not fire twice
+PASS Not ended at T-1s
+PASS End fires at T-0 and enters overtime
+PASS Overtime counts up to +90s
+PASS End switches to Rest
+PASS Rest auto-starts with flags reset
+PASS No warn for 60s rest phase; end fires
+PASS Switch back to Work
+PASS Reset returns to Idle
+PASS Idle snapshot
+PASS No warn for 30s phase before end
+PASS 30s phase ends without warn
+PASS WAV headers valid (RIFF/WAVE/data)
+PASS Warn/End WAV peak >= 45% full scale
+PASS Warn WAV duration 490ms in [200,900]
+PASS End WAV duration 3310ms in [2500,4500]
+PASS Start WAV duration 280ms in [150,600]
+PASS TotalSecondsOf converts minutes+seconds
+PASS TotalSecondsOf clamps to 1 second minimum
+PASS Settings Normalize clamps to control ranges
+PASS Settings save/load round-trip
+ALL PASS
