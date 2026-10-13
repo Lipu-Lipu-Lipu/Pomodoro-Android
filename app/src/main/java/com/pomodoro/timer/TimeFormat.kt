@@ -21,17 +21,31 @@ object TimeFormat {
         }
     }
 
-    /** 常驻通知里的一行描述。 */
+    /**
+     * 常驻通知里的阶段文案。
+     *
+     * 刻意**不带时间**：具体秒数交给系统 Chronometer 渲染（见 `ReminderNotifier`），
+     * 这样应用在后台被冻结时倒计时依然在走。
+     */
     fun statusLine(snapshot: PhaseSnapshot): String {
         val name = when (snapshot.phase) {
             Phase.WORK -> "工作中"
             Phase.REST -> "休息中"
             Phase.IDLE -> "已停止"
         }
-        return if (snapshot.isOvertime) {
-            "$name · 已超时 ${overtime(snapshot.overtimeSeconds)}"
-        } else {
-            "$name · 剩余 ${remaining(snapshot.remainingSeconds)}"
-        }
+        return if (snapshot.isOvertime) "$name · 已超时" else name
     }
+
+    /**
+     * 状态栏左上角芯片里的短文本。
+     *
+     * Android 16（API 36）起，`Notification.Builder.setShortCriticalText` 会把这段文字显示在
+     * 状态栏左上角的通知图标旁边，位置很窄，所以只放时分秒本身：`18:08` / `+00:30`。
+     */
+    fun chipText(snapshot: PhaseSnapshot): String =
+        if (snapshot.isOvertime) {
+            overtime(snapshot.overtimeSeconds)
+        } else {
+            remaining(snapshot.remainingSeconds)
+        }
 }

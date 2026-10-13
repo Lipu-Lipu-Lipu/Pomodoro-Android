@@ -1,9 +1,13 @@
 package com.pomodoro.timer
 
 import android.Manifest
+import android.app.NotificationManager
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -12,9 +16,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.pomodoro.timer.ui.AlertCard
+import com.pomodoro.timer.ui.FullScreenIntentPrompt
 import com.pomodoro.timer.ui.MainScreen
 import com.pomodoro.timer.ui.PomodoroTheme
 import kotlinx.coroutines.launch
@@ -28,6 +35,10 @@ import kotlinx.coroutines.launch
  */
 class MainActivity : ComponentActivity() {
 
+    /** 本进程内只提示一次「全屏通知」授权，避免反复打扰。 */
+    private var fullScreenPromptShown = false
+    private var showFullScreenPrompt by mutableStateOf(false)
+
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (!granted) {
@@ -37,6 +48,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 到点提醒要「像闹钟一样」：允许在锁屏之上显示，并点亮屏幕。
+        // 配合提醒通知上的全屏 Intent，息屏时系统会把界面直接拉到锁屏前面。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
 
         val loadedSettings = SettingsStore.load(this)
 
@@ -77,6 +95,13 @@ class MainActivity : ComponentActivity() {
                         finishAndRemoveTask()
                     }
                 }
+
+                if (showFullScreenPrompt) {
+                    FullScreenIntentPrompt(
+                        onConfirm = { openFullScreenIntentSettings() },
+                        onDismiss = { showFullScreenPrompt = false },
+                    )
+                }
             }
         }
 
@@ -97,6 +122,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         PomodoroController.isUiVisible = true
+        promptFullScreenIntentIfNeeded()
     }
 
     override fun onPause() {
@@ -123,6 +149,40 @@ class MainActivity : ComponentActivity() {
         ) == PackageManager.PERMISSION_GRANTED
         if (!granted) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    /**
+     * Android 14+ 起「全屏通知」默认不授予计时类应用，而未授权时到点提醒：
+     * 后台不会弹到前台、息屏不会亮屏——表现就是「只有声音」。
+     * 这里检测到未授权就引导一次，用户开启后不再提示。
+     */
+    private fun promptFullScreenIntentIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return
+        }
+        if (fullScreenPromptShown) {
+            return
+        }
+        val manager = getSystemService(NotificationManager::class.java) ?: return
+        if (manager.canUseFullScreenIntent()) {
+            return
+        }
+        fullScreenPromptShown = true
+        showFullScreenPrompt = true
+    }
+
+    private fun openFullScreenIntentSettings() {
+        showFullScreenPrompt = false
+        val packageUri = Uri.parse("package:$packageName")
+        try {
+            startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, packageUri))
+        } catch (_: Throwable) {
+            // 个别 ROM 没有这个页面，退到应用详情页
+            try {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageUri))
+            } catch (_: Throwable) {
+            }
         }
     }
 }

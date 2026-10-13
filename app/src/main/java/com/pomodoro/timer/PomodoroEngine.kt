@@ -56,6 +56,10 @@ class PomodoroEngine(
     private var warnFired: Boolean = false
     private var endFired: Boolean = false
 
+    /** 当前阶段开始的单调时刻（毫秒）。供精确闹钟排程推算提醒时刻使用。 */
+    val phaseStartedAtMs: Long
+        get() = phaseStartMs
+
     val isRunning: Boolean
         get() = currentPhase != Phase.IDLE
 
@@ -112,7 +116,17 @@ class PomodoroEngine(
         val overtimeSeconds = if (overtime) elapsed - target else 0
         val displayRemaining = remaining.coerceAtLeast(0)
 
-        return PhaseSnapshot(currentPhase, displayRemaining, overtime, overtimeSeconds, warn, end)
+        return PhaseSnapshot(
+            phase = currentPhase,
+            remainingSeconds = displayRemaining,
+            isOvertime = overtime,
+            overtimeSeconds = overtimeSeconds,
+            justFiredWarn = warn,
+            justFiredEnd = end,
+            // 真正的亚秒级剩余（超时后为负）：界面据此把圆环画得连续，
+            // 常驻通知也据此推算 Chronometer 的基准时刻。
+            remainingMillis = target * 1000L - elapsedMs,
+        )
     }
 
     private fun beginPhase(phase: Phase) {

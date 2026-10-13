@@ -7,6 +7,17 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- 精确闹钟：把「提前 1 分钟 / 到点」交给系统闹钟，息屏与 Doze 下也能准时唤醒。
+         Android 13+ 用 USE_EXACT_ALARM（闹钟/计时类应用安装即授予，无需用户操作）；
+         Android 12 及以下用 SCHEDULE_EXACT_ALARM。 -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+
+    <!-- 到点提醒在锁屏上直接亮屏弹出（Android 14+ 需用户授权，未授权时降级为 Heads-up） -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -36,6 +47,11 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="pomodoro_countdown_timer" />
         </service>
+
+        <!-- 精确闹钟的落点：息屏/Doze 下由系统唤醒进程投递提醒 -->
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

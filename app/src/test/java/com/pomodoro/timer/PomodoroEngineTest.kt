@@ -194,4 +194,89 @@ class PomodoroEngineTest {
         assertEquals("+00:00", TimeFormat.overtime(0))
         assertEquals("+1h40", TimeFormat.overtime(100 * 60))
     }
+
+    /**
+     * 快照里的亚秒级剩余毫秒：界面圆环的平滑进度与常驻通知 Chronometer 的基准时刻都取自它，
+     * 所以必须真的是亚秒级（而不是被取整到整秒）。
+     */
+    @Test
+    fun snapshotExposesSubSecondRemaining() {
+        var now = 5_000_000L
+        val engine = PomodoroEngine { now }
+        engine.workSeconds = 120
+        engine.start()
+
+        assertEquals("开局剩余整 120 秒", 120_000L, engine.poll().remainingMillis)
+
+        now += 500
+        assertEquals("半秒后仍保留亚秒精度", 119_500L, engine.poll().remainingMillis)
+
+        now += 119_750
+        val overtime = engine.poll()
+        assertTrue("越过到点后进入超时", overtime.isOvertime)
+        assertEquals("超时后剩余毫秒为负，且同样是亚秒级", -250L, overtime.remainingMillis)
+    }
+
+    /**
+     * 常驻通知文案里不再写秒数 —— 秒数交给系统 Chronometer 渲染，
+     * 这样应用退到后台被冻结时倒计时仍由 SystemUI 每秒刷新。
+     */
+    @Test
+    fun statusLineLeavesTheClockToSystemChronometer() {
+        assertEquals(
+            "工作中（不带时间）",
+            "工作中",
+            TimeFormat.statusLine(PhaseSnapshot(Phase.WORK, 50, false, 0, false, false)),
+        )
+        assertEquals(
+            "休息中（不带时间）",
+            "休息中",
+            TimeFormat.statusLine(PhaseSnapshot(Phase.REST, 50, false, 0, false, false)),
+        )
+        assertEquals(
+            "超时后只标注状态",
+            "工作中 · 已超时",
+            TimeFormat.statusLine(PhaseSnapshot(Phase.WORK, 0, true, 30, false, false)),
+        )
+    }
+
+    /** 状态栏左上角芯片里的短文本：位置很窄，只放时间本身。 */
+    @Test
+    fun chipTextIsShortClockForStatusBar() {
+        assertEquals(
+            "剩余时间",
+            "18:08",
+            TimeFormat.chipText(PhaseSnapshot(Phase.WORK, 18 * 60 + 8, false, 0, false, false)),
+        )
+        assertEquals(
+            "超时正计时",
+            "+00:30",
+            TimeFormat.chipText(PhaseSnapshot(Phase.WORK, 0, true, 30, false, false)),
+        )
+        assertEquals(
+            "超过 100 分钟折叠为时分",
+            "+1h40",
+            TimeFormat.chipText(PhaseSnapshot(Phase.REST, 0, true, 100 * 60, false, false)),
+        )
+    }
+
+    /**
+     * 提醒闹钟的时刻推算。对应引擎里「提前 1 分钟提醒仅在阶段时长超过 60 秒时触发」的语义：
+     * 息屏/Doze 下提醒不再靠轮询，而是靠这两个时刻的精确闹钟，因此这里逐条钉死边界。
+     */
+    @Test
+    fun reminderTriggerTimesMatchEngineSemantics() {
+        val start = 1_000_000L
+
+        // 120 秒工作阶段：T-60 提前提醒，T-0 到点
+        assertEquals(start + 60_000L to start + 120_000L, ReminderScheduler.reminderTriggerTimes(start, 120))
+        // 90 秒：提前提醒落在第 30 秒
+        assertEquals(start + 30_000L to start + 90_000L, ReminderScheduler.reminderTriggerTimes(start, 90))
+        // 61 秒：刚好越过门槛，提前提醒只落在第 1 秒
+        assertEquals(start + 1_000L to start + 61_000L, ReminderScheduler.reminderTriggerTimes(start, 61))
+        // 恰好 60 秒：与引擎一致，不发提前提醒
+        assertEquals(null to start + 60_000L, ReminderScheduler.reminderTriggerTimes(start, 60))
+        // 30 秒：无提前提醒
+        assertEquals(null to start + 30_000L, ReminderScheduler.reminderTriggerTimes(start, 30))
+    }
 }

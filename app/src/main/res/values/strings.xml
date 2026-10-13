@@ -11,8 +11,8 @@
 
     <!-- 提醒卡片（AlertCard） -->
     <string name="alert_title_warn">最后 1 分钟</string>
-    <string name="alert_title_work_end">工作时间到！</string>
-    <string name="alert_title_rest_end">休息时间到！</string>
+    <string name="alert_title_work_end">休息时间到！</string>
+    <string name="alert_title_rest_end">工作时间到！</string>
     <string name="alert_subtitle_warn">%1$s阶段还剩 1 分钟</string>
     <string name="alert_subtitle_work_end">已进入超时计时，需要休息请点击“结束，进入休息”</string>
     <string name="alert_subtitle_rest_end">已进入超时计时，需要工作请点击“结束，进入工作”</string>
@@ -22,8 +22,8 @@
     <string name="balloon_title_warn">还剩 1 分钟</string>
     <string name="balloon_body_warn">%1$s阶段还剩 1 分钟</string>
     <string name="balloon_title_end">时间到</string>
-    <string name="balloon_body_work_end">工作时间到！需要休息请点击“结束，进入休息”</string>
-    <string name="balloon_body_rest_end">休息时间到！需要工作请点击“结束，进入工作”</string>
+    <string name="balloon_body_work_end">休息时间到！需要休息请点击“结束，进入休息”</string>
+    <string name="balloon_body_rest_end">工作时间到！需要工作请点击“结束，进入工作”</string>
 
     <!-- 通知渠道 -->
     <string name="channel_timer_name">计时提醒</string>

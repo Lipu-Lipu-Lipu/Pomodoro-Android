@@ -50,11 +50,27 @@ object PomodoroController {
     @Volatile
     var isUiVisible: Boolean = false
 
+    /**
+     * 提醒投递口。由 [PomodoroService] 在存活期间注册，进程死亡后随之失效。
+     *
+     * 把它放在状态机这一层，是为了让「100ms 轮询」和「精确闹钟」两条触发路径共用同一次投递：
+     * 两者都只是调用 [tickAndDeliver]，由引擎的 `warnFired` / `endFired` 标志位保证整个阶段只提醒一次。
+     */
+    internal var reminderSink: ((AlertKind, Phase) -> Unit)? = null
+
     val isRunning: Boolean
         get() = engine.isRunning
 
     val currentPhase: Phase
         get() = engine.currentPhase
+
+    /** 当前阶段开始的单调时刻（毫秒）。对应引擎里的 `phaseStartedAtMs`。 */
+    val phaseStartElapsedMs: Long
+        get() = engine.phaseStartedAtMs
+
+    /** 当前阶段的总时长（秒）。空闲时回退到工作时长（仅用于排程前的兜底）。 */
+    val phaseTargetSeconds: Int
+        get() = if (engine.currentPhase == Phase.REST) engine.restSeconds else engine.workSeconds
 
     /** 本轮生效的工作时长（秒）。对应桌面版 `_engine.WorkSeconds`。 */
     val workSeconds: Int
@@ -93,6 +109,23 @@ object PomodoroController {
     fun tick(): PhaseSnapshot {
         val snap = engine.poll()
         _snapshot.value = snap
+        return snap
+    }
+
+    /**
+     * 推进状态机并把本次新触发的提醒交给 [reminderSink] 投递。
+     *
+     * 由前台服务的轮询循环与 [ReminderReceiver]（精确闹钟）共同调用：
+     * 无论哪条路径先到，`justFired*` 都只会为真一次，因此提醒不会重复。
+     */
+    fun tickAndDeliver(): PhaseSnapshot {
+        val snap = tick()
+        if (snap.justFiredWarn) {
+            reminderSink?.invoke(AlertKind.WARN, snap.phase)
+        }
+        if (snap.justFiredEnd) {
+            reminderSink?.invoke(AlertKind.END, snap.phase)
+        }
         return snap
     }
 
